@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { getResources } from '../../services/api';
-import { Link } from 'react-router-dom';
+import { getPaymentHistory } from '../../services/api';
 
-const ResourceList = () => {
-  const [resources, setResources] = useState([]);
+const PaymentHistory = () => {
+  const [payments, setPayments] = useState([]);
 
     useEffect(() => {
-        const fetchResources = async () => {
-              const data = await getResources();
-                    setResources(data);
+        const fetchPayments = async () => {
+              const data = await getPaymentHistory();
+                    setPayments(data);
                         };
-                            fetchResources();
+                            fetchPayments();
                               }, []);
 
                                 return (
                                     <div>
-                                          <h1>Resource Library</h1>
+                                          <h1>Payment History</h1>
                                                 <ul>
-                                                        {resources.map((resource) => (
-                                                                  <li key={resource.id}>
-                                                                              <Link to={`/library/${resource.id}`}>{resource.title}</Link>
+                                                        {payments.map((payment) => (
+                                                                  <li key={payment.id}>
+                                                                              {payment.date} - {payment.amount} - {payment.status}
                                                                                         </li>
                                                                                                 ))}
                                                                                                       </ul>
@@ -27,5 +26,5 @@ const ResourceList = () => {
                                                                                                             );
                                                                                                             };
 
-                                                                                                            export default ResourceList;
+                                                                                                            export default PaymentHistory;
                                                                                                             
