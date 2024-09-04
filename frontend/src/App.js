@@ -1,30 +1,29 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Header from './Layout/Header';
-import Footer from './Layout/Footer';
-import ReturnFiling from './components/ReturnFiling';
-import AuditCompliance from './components/AuditCompliance';
-import Analytics from './components/Analytics';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'; // Updated import
+import Homepage from './components/Home/Homepage';
+import ReturnFiling from './components/GST/ReturnFiling';
+import AuditCompliance from './components/GST/AuditCompliance';
+import Analytics from './components/Admin/Analytics';
+import Register from './components/Auth/Register'; // Import the Register component
+import Header from './components/Layout/Header';
+
 
 const App = () => {
   return (
-      <Router>
-            <Header />
-                  <main>
-                          <Switch>
-                                    <Route path="/return-filing" component={ReturnFiling} />
-                                              <Route path="/audit-compliance" component={AuditCompliance} />
-                                                        <Route path="/analytics" component={Analytics} />
-                                                                  <Route path="/" exact>
-                                                                              <h2>Welcome to GSTPAssociation.org</h2>
-                                                                                          <p>Your platform for comprehensive GST solutions.</p>
-                                                                                                    </Route>
-                                                                                                            </Switch>
-                                                                                                                  </main>
-                                                                                                                        <Footer />
-                                                                                                                            </Router>
-                                                                                                                              );
-                                                                                                                              };
+    <Router>
+      <Header />
+      <main>
+        <Routes>
+          <Route path="/return-filing" element={<ReturnFiling />} />
+          <Route path="/audit-compliance" element={<AuditCompliance />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/signup" element={<Register />} /> {/* Route for SignUp */}
+          <Route path="/" element={<Homepage />} />
+        </Routes>
+      </main>
+    </Router>
+  );
+};
 
-                                                                                                                              export default App;
-                                                                                                                              
+export default App;
+
