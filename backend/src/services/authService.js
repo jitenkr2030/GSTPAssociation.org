@@ -1,63 +1,83 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { jwtSecret, jwtExpiration } = require('../config/jwt');
+const User = require('../models/userModel'); // Assuming you have a User model
+const { sendEmail } = require('../utils/emailUtils');
 
-const register = async (userData) => {
-    const { username, email, password } = userData;
+// Register function (example)
+const register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        throw new Error('User already exists');
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ msg: 'User already exists' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Create new user
+    user = new User({
+      name,
+      email,
+      password,
+    });
 
-    // Create a new user
-    const newUser = new User({ username, email, password: hashedPassword });
-    await newUser.save();
+    // Hash password before saving
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
 
-    return { message: 'User registered successfully' };
+    await user.save();
+
+    res.json({ msg: 'User registered successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
-const login = async (email, password) => {
+// Login function
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-        throw new Error('User not found');
+      return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
+    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-        throw new Error('Invalid credentials');
+      return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, jwtSecret, { expiresIn: jwtExpiration });
+    // Create and return JWT
+    const payload = {
+      user: {
+        id: user.id,
+      },
+    };
 
-    return { token, user };
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET, // Your JWT secret
+      { expiresIn: '1h' }, // Token expiration
+      (err, token) => {
+        if (err) throw err;
+        res.json({ token });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
-const logout = async () => {
-    // Handle logout logic if needed, e.g., token blacklisting
-    return { message: 'User logged out successfully' };
-};
-
-const refreshToken = async (token) => {
-    // Handle token refresh logic
-    try {
-        const decoded = jwt.verify(token, jwtSecret);
-        const newToken = jwt.sign({ id: decoded.id }, jwtSecret, { expiresIn: jwtExpiration });
-        return { token: newToken };
-    } catch (error) {
-        throw new Error('Invalid token');
-    }
+// Reset password function (example)
+const resetPassword = async (req, res) => {
+  // Your reset password logic here
 };
 
 module.exports = {
-    register,
-    login,
-    logout,
-    refreshToken,
+  register,
+  login, // Ensure login is exported
+  resetPassword,
 };
